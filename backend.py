@@ -21,7 +21,7 @@ class dat:
     
 
 
-d = dat("catalog.csv")
+#d = dat("catalog.csv")
 
 #print(d.GetDict())
 #print(d.GetCol())
