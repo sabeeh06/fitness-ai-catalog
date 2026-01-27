@@ -1,0 +1,12 @@
+id,title,goal,level,days_per_week,description,equipment,
+1,Beginner Full Body Reset,fat loss,beginner,3,Full-body plan focusing on form, consistency,"[' and light cardio finishers', 'home']"
+2,Push Pull Legs Hypertrophy,muscle gain,intermediate,6,Classic PPL split with progressive overload and accessory work,gym,
+3,5K Run Builder,endurance,beginner,4,Run-walk progression to build aerobic base and reach a 5K,home,
+4,Strength Fundamentals,strength,beginner,3,Barbell basics with simple linear progression on core lifts,gym,
+5,Upper/Lower Split,muscle gain,intermediate,4,Upper and lower days with compound focus and balanced volume,gym,
+6,HIIT + Core,fat loss,intermediate,3,Short interval sessions paired with core stability circuits,home,
+7,Mobility & Posture,mobility,beginner,5,Daily mobility flows targeting hips, shoulders,"[' and thoracic spine', 'home']"
+8,Athletic Conditioning,performance,advanced,5,Power + conditioning sessions built around sprint and plyo work,gym,
+9,Home Dumbbell Only,muscle gain,beginner,4,Dumbbell-only program with full-body emphasis and tempo control,home,
+10,Lean Bulk Builder,muscle gain,advanced,6,High-volume hypertrophy plan with periodized intensity blocks,gym,
+11,6 K Run,Fat Loss,advanced,2,6 k run,none,
