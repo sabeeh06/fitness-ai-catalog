@@ -24,15 +24,15 @@ def ask_fitness_goal():
         choice = input("Select an option (1-5): ")
 
         if choice == "1":
-            return "gain muscle"
+            return "muscle gain"
         elif choice == "2":
-            return "lose weight"
+            return "fat loss"
         elif choice == "3":
-            return "maintain fitness"
+            return "strength"
         elif choice == "4":
-            return "improve endurance"
+            return "endurance"
         elif choice == "5":
-            return "increase flexibility"
+            return "mobility"
         else:
             print("Invalid selection. Please try again.")
 
@@ -41,8 +41,8 @@ def get_workouts_by_goal(workouts, goal):
     recommendations = []
 
     for workout in workouts:
-        if workout["category"].lower() == goal.lower():
-            recommendations.append(workout["name"])
+        if workout["goal"].lower() == goal.lower():
+            recommendations.append(workout["title"])
 
     return recommendations
 
@@ -50,12 +50,12 @@ def get_workouts_by_goal(workouts, goal):
 def main():
     print("🤖 Welcome to the AI Fitness Chatbot!")
 
-    workouts_db = load_workouts("workouts.csv")
+    workouts_db = load_workouts("fitness_catalog.csv")
     goal = ask_fitness_goal()
 
     recommended_workouts = get_workouts_by_goal(workouts_db, goal)
 
-    print(f"\nExcellent choice! Recommending workouts to {goal}:\n")
+    print(f"\nRecommended programs for {goal}:\n")
 
     if recommended_workouts:
         for workout in recommended_workouts:
