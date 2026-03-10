@@ -1,19 +1,86 @@
 import csv
+import datetime
 
+
+# USER CLASS
+
+class User:
+    def __init__(self):
+        self.curDate = datetime.date.today()
+        self.workouts = []
+        self.rank = Rank()
+
+    def addWorkout(self, workout):
+        self.workouts.append(workout)
+        self.rank.updateRank(workout["points"])
+
+    def displayHistory(self):
+        if not self.workouts:
+            print("No workouts completed yet.")
+            return
+
+        print("\nWorkout History")
+        for w in self.workouts:
+            print(f"{w['title']} - {w['points']} points")
+
+    def viewRank(self):
+        self.rank.view()
+
+
+# RANK SYSTEM
+
+class Rank:
+
+    def __init__(self):
+        self.elo = 0
+        self.tier = "Bronze"
+        self.timeSinceLastWorkout = 0
+
+    def updateRank(self, points):
+        self.elo += points
+        self.updateTier()
+
+    def updateTier(self):
+
+        if self.elo < 100:
+            self.tier = "Bronze"
+        elif self.elo < 250:
+            self.tier = "Silver"
+        elif self.elo < 500:
+            self.tier = "Gold"
+        else:
+            self.tier = "Platinum"
+
+    def view(self):
+        print("\n===== YOUR RANK =====")
+        print(f"Tier: {self.tier}")
+        print(f"ELO: {self.elo}")
+        print("=====================")
+
+
+
+# LOAD WORKOUT DATABASE
 
 def load_workouts(filename):
+
     workouts = []
 
     with open(filename, newline="") as file:
         reader = csv.DictReader(file)
+
         for row in reader:
             workouts.append(row)
 
     return workouts
 
 
+
+# ASK FITNESS GOAL
+
 def ask_fitness_goal():
+
     while True:
+
         print("\nWhat is your main fitness goal?")
         print("1. Gain muscle")
         print("2. Lose weight")
@@ -34,34 +101,92 @@ def ask_fitness_goal():
         elif choice == "5":
             return "mobility"
         else:
-            print("Invalid selection. Please try again.")
+            print("Invalid selection.")
 
+
+
+# GET WORKOUTS BY GOAL
 
 def get_workouts_by_goal(workouts, goal):
+
     recommendations = []
 
     for workout in workouts:
         if workout["goal"].lower() == goal.lower():
-            recommendations.append(workout["title"])
+            recommendations.append(workout)
 
     return recommendations
 
 
+
+# DISPLAY RECOMMENDATIONS
+
+def display_recommendations(recommendations):
+
+    if not recommendations:
+        print("No workouts found.")
+        return
+
+    print("\nRecommended Programs:\n")
+
+    for i, workout in enumerate(recommendations):
+
+        print(f"{i+1}. {workout['title']} ({workout['level']})")
+
+
+
+# COMPLETE WORKOUT
+
+def complete_workout(user, workout):
+
+    # simple point system
+    level = workout["level"]
+
+    if level == "beginner":
+        points = 50
+    elif level == "intermediate":
+        points = 100
+    else:
+        points = 150
+
+    workout_record = {
+        "title": workout["title"],
+        "points": points
+    }
+
+    user.addWorkout(workout_record)
+
+    print(f"\nWorkout completed! +{points} points")
+
+
+
+# MAIN CHATBOT
+
 def main():
-    print("🤖 Welcome to the AI Fitness Chatbot!")
+
+    print("🤖 Welcome to the AI Fitness Rank System!")
 
     workouts_db = load_workouts("fitness_catalog.csv")
+
+    user = User()
+
     goal = ask_fitness_goal()
 
-    recommended_workouts = get_workouts_by_goal(workouts_db, goal)
+    recommendations = get_workouts_by_goal(workouts_db, goal)
 
-    print(f"\nRecommended programs for {goal}:\n")
+    display_recommendations(recommendations)
 
-    if recommended_workouts:
-        for workout in recommended_workouts:
-            print(f"- {workout}")
-    else:
-        print("No workouts found for this goal.")
+    if recommendations:
+
+        choice = int(input("\nSelect workout to complete: ")) - 1
+
+        if 0 <= choice < len(recommendations):
+
+            complete_workout(user, recommendations[choice])
+
+    user.viewRank()
+
+    user.displayHistory()
 
 
 main()

@@ -1,4 +1,4 @@
-from database import load_catalog, save_catalog
+from Database import load_catalog, save_catalog
 from backend import add_item, edit_item, find_item
 from frontend import (
     show_menu,
