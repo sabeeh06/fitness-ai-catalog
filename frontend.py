@@ -160,7 +160,7 @@ def complete_workout(user, workout):
 
 
 
-# MAIN CHATBOT
+# USER INTERFACE
 
 def main():
 
