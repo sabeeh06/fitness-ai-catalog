@@ -164,7 +164,7 @@ def complete_workout(user, workout):
 
 def main():
 
-    print("🤖 Welcome to the AI Fitness Rank System!")
+    print("Welcome to the Fitness Rank System!")
 
     workouts_db = load_workouts("fitness_catalog.csv")
 
