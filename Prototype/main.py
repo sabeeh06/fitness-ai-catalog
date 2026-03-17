@@ -9,7 +9,8 @@ from frontend import (
 )
 
 def main():
-    filename = "fitness_catalog.csv"
+    # Use the prototype CSV by default (it lives in this folder).
+    filename = "catalog.csv"
     items = load_catalog(filename)
 
     while True:

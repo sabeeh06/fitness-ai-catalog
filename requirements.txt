@@ -1,0 +1,2 @@
+# Fitness App – Python 3.7+
+# No external dependencies; uses only the standard library.
