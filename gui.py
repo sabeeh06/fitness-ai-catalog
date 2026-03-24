@@ -86,7 +86,14 @@ class FitnessAppGUI(tk.Tk):
         style.configure("TButton", padding=(14, 10))
         style.map("TButton", foreground=[("disabled", muted)])
 
-        style.configure("Primary.TButton", padding=(14, 10), background=accent, foreground="white")
+        style.configure(
+            "Primary.TButton",
+            padding=(10, 6),
+            font=("Segoe UI", 10, "bold"),
+            background=accent,
+            foreground="white",
+            borderwidth=0
+        )
         style.map("Primary.TButton", background=[("active", "#2563eb")])
 
         style.configure("TCombobox", padding=(8, 8))
@@ -164,7 +171,8 @@ class FitnessAppGUI(tk.Tk):
 
     def _build_home(self, parent):
         parent.columnconfigure(0, weight=1)
-        parent.rowconfigure(3, weight=1)
+        parent.rowconfigure(1, weight=1)
+        parent.rowconfigure(2, weight=0)
 
         # Goal selector card
         goal_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
@@ -185,7 +193,7 @@ class FitnessAppGUI(tk.Tk):
         rec_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         rec_card.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
         rec_card.columnconfigure(0, weight=1)
-        rec_card.rowconfigure(1, weight=1)
+        rec_card.rowconfigure(2, weight=1)
 
         ttk.Label(rec_card, text="Recommended", style="CardTitle.TLabel").grid(row=0, column=0, sticky="w")
         self.tree = ttk.Treeview(rec_card, columns=("title", "days"), show="headings", selectmode="browse", height=10)
@@ -203,9 +211,15 @@ class FitnessAppGUI(tk.Tk):
         # Details card
         details_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         details_card.grid(row=2, column=0, sticky="ew", pady=(0, 12))
+        details_card.rowconfigure(2, weight=1)
+        details_card.rowconfigure(1, weight=0)
         details_card.columnconfigure(0, weight=1)
 
         ttk.Label(details_card, text="Details", style="CardTitle.TLabel").grid(row=0, column=0, sticky="w")
+        
+        self.complete_btn = ttk.Button(details_card, text="Complete workout", style="Primary.TButton", command=self._complete_selected)
+        self.complete_btn.grid(row=2, column=0, sticky="ew")
+
         self.details = tk.Text(
             details_card,
             height=8,
@@ -216,10 +230,7 @@ class FitnessAppGUI(tk.Tk):
             foreground=self._colors["text"],
             insertbackground=self._colors["text"],
         )
-        self.details.grid(row=1, column=0, sticky="ew", pady=(10, 12))
-
-        self.complete_btn = ttk.Button(details_card, text="Complete workout", style="Primary.TButton", command=self._complete_selected)
-        self.complete_btn.grid(row=2, column=0, sticky="ew")
+        self.details.grid(row=1, column=0, sticky="nsew", pady=(10, 12))
 
     def _build_history(self, parent):
         parent.columnconfigure(0, weight=1)
