@@ -1,58 +1,69 @@
 # Fitness App (Python)
 
-A command-line fitness app: set a goal, get workout recommendations, log workouts, and track your rank (Bronze → Silver → Gold → Platinum).
+Fitness app with a modern web interface (HTML/CSS), plus desktop and CLI versions.
 
-## Setup
+## Recommended run method (Web / HTML GUI)
 
-1. Install **Python 3.7+** on your machine.
-2. Clone the repo:  
-   `git clone https://github.com/sabeeh06/fitness-ai-catalog`
-3. Ensure `fitness_catalog.csv` is in the same folder as `main.py` and `fitness_app.py`.
+Use this version for the updated, modern, accessible interface.
 
-## Run
+### 1) Install Python
 
-From the project folder:
+- Python **3.7+** is required.
 
-```bash
-python main.py
-```
-
-Or, if you use `python3`:
+### 2) Clone the repo
 
 ```bash
-python3 main.py
+git clone https://github.com/sabeeh06/fitness-ai-catalog
+cd fitness-ai-catalog
 ```
 
-## Run (GUI)
-
-From the project folder:
-
-```bash
-python gui.py
-```
-
-## Run (Web / HTML GUI)
-
-This runs the app in your browser (modern HTML + accessible UI).
-
-1. Install dependencies:
+### 3) Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Start the web server:
+If `pip` does not work, try:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### 4) Start the web app
 
 ```bash
 python web_app.py
 ```
 
-3. Open:
+If `python` does not work on Windows, try:
 
-- `http://127.0.0.1:5000`
+```bash
+py web_app.py
+```
 
-Notes:
-- Your progress is saved to `fitness_app_data.json` (same as the desktop GUI).
+### 5) Open in your browser
+
+- [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+## Other run options
+
+### Desktop GUI (Tkinter)
+
+```bash
+python gui.py
+```
+
+### Command line (CLI)
+
+```bash
+python main.py
+```
+
+## Important notes
+
+- The **new updated UI** is the browser app (`web_app.py`), not `gui.py`.
+- Your progress is saved to `fitness_app_data.json`.
+- If the page looks old, make sure you opened `http://127.0.0.1:5000` and hard-refresh with `Ctrl + F5`.
 
 ## Features
 
@@ -64,7 +75,9 @@ Notes:
 
 ## Project layout
 
-- `main.py` – Entry point and menu.
+- `web_app.py` – Web server for the modern HTML GUI.
+- `main.py` – CLI entry point and menu.
+- `gui.py` – Legacy desktop GUI (Tkinter).
 - `fitness_app.py` – Core logic (user, rank, catalog, recommendations).
 - `fitness_catalog.csv` – Workout catalog (id, title, goal, level, days_per_week, description, equipment).
 - `frontend.py` – Original one-shot rank demo (optional).
