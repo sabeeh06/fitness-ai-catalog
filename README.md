@@ -31,6 +31,29 @@ From the project folder:
 python gui.py
 ```
 
+## Run (Web / HTML GUI)
+
+This runs the app in your browser (modern HTML + accessible UI).
+
+1. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Start the web server:
+
+```bash
+python web_app.py
+```
+
+3. Open:
+
+- `http://127.0.0.1:5000`
+
+Notes:
+- Your progress is saved to `fitness_app_data.json` (same as the desktop GUI).
+
 ## Features
 
 - **Set fitness goal** – Muscle gain, lose weight, maintain fitness, endurance, or flexibility.

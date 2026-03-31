@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Fitness · History{% endblock %}
+
+{% block content %}
+  <section class="card">
+    <h1 class="h1">Workout history</h1>
+    <p class="muted">Your most recent workouts appear first.</p>
+
+    {% if history and history|length > 0 %}
+      <div class="table" role="table" aria-label="Workout history table">
+        <div class="table__head" role="rowgroup">
+          <div class="table__row" role="row">
+            <div class="table__cell table__cell--head" role="columnheader">Date</div>
+            <div class="table__cell table__cell--head" role="columnheader">Workout</div>
+            <div class="table__cell table__cell--head" role="columnheader">Points</div>
+          </div>
+        </div>
+        <div class="table__body" role="rowgroup">
+          {% for w in history %}
+            <div class="table__row" role="row">
+              <div class="table__cell" role="cell">{{ w.date|default("") }}</div>
+              <div class="table__cell" role="cell">{{ w.title|default("Workout") }}</div>
+              <div class="table__cell" role="cell">+{{ w.points|default(0) }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty" role="status">No workouts completed yet.</div>
+    {% endif %}
+  </section>
+{% endblock %}
+

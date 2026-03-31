@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Fitness · Friends{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <div class="card">
+      <h1 class="h1">Friends</h1>
+      <p class="muted">Add friends to compare ranks. ELO is optional.</p>
+
+      <form class="form" method="post" action="{{ url_for('add_friend') }}">
+        <div class="form__row">
+          <div class="form__field">
+            <label class="label" for="name">Name</label>
+            <input class="input" id="name" name="name" autocomplete="off" required />
+          </div>
+          <div class="form__field form__field--small">
+            <label class="label" for="elo">ELO</label>
+            <input class="input" id="elo" name="elo" inputmode="numeric" pattern="[0-9]*" />
+          </div>
+        </div>
+        <button class="btn btn--primary" type="submit">Add friend</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="h2">Leaderboard</h2>
+      <p class="muted">Sorted by highest ELO.</p>
+
+      <div class="table" role="table" aria-label="Leaderboard table">
+        <div class="table__head" role="rowgroup">
+          <div class="table__row" role="row">
+            <div class="table__cell table__cell--head" role="columnheader">Name</div>
+            <div class="table__cell table__cell--head" role="columnheader">Tier</div>
+            <div class="table__cell table__cell--head" role="columnheader">ELO</div>
+            <div class="table__cell table__cell--head" role="columnheader">Action</div>
+          </div>
+        </div>
+        <div class="table__body" role="rowgroup">
+          {% for name, tier, elo in leaderboard %}
+            <div class="table__row" role="row">
+              <div class="table__cell" role="cell">{{ name }}</div>
+              <div class="table__cell" role="cell">{{ tier }}</div>
+              <div class="table__cell" role="cell">{{ elo }}</div>
+              <div class="table__cell" role="cell">
+                {% if name != "You" %}
+                  <form method="post" action="{{ url_for('remove_friend') }}">
+                    <input type="hidden" name="name" value="{{ name }}" />
+                    <button class="btn btn--danger" type="submit">Remove</button>
+                  </form>
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+

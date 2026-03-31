@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Fitness{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+    <meta name="color-scheme" content="dark light" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="topbar" role="banner">
+      <div class="container topbar__row">
+        <div class="brand">
+          <div class="brand__title">Fitness</div>
+          <div class="brand__sub">Tier: {{ rank.tier }} · {{ rank.elo }} ELO</div>
+        </div>
+        <nav class="nav" aria-label="Primary">
+          <a class="nav__link {% if page=='home' %}is-active{% endif %}" href="{{ url_for('home') }}">Home</a>
+          <a class="nav__link {% if page=='history' %}is-active{% endif %}" href="{{ url_for('history') }}">History</a>
+          <a class="nav__link {% if page=='friends' %}is-active{% endif %}" href="{{ url_for('friends') }}">Friends</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="container" tabindex="-1">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section class="toasts" aria-label="Notifications">
+            {% for category, msg in messages %}
+              <div class="toast toast--{{ category }}" role="status" aria-live="polite">{{ msg }}</div>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__row">
+        <div class="muted">Local-only demo · Data saved to <code>fitness_app_data.json</code></div>
+        <div class="muted">Keyboard: Tab/Shift+Tab · Activate: Enter/Space</div>
+      </div>
+    </footer>
+  </body>
+</html>
+

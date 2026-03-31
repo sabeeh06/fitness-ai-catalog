@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Fitness · Home{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <div class="card">
+      <h1 class="h1">Your goal</h1>
+      <p class="muted">Pick a goal to get workout recommendations.</p>
+
+      <form class="form" method="post" action="{{ url_for('set_goal') }}">
+        <label class="label" for="goal_label">Goal</label>
+        <select class="select" id="goal_label" name="goal_label" required>
+          {% for _num, label, value in goals %}
+            <option value="{{ label }}" {% if goal_value == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+          {% endfor %}
+        </select>
+        <button class="btn btn--primary" type="submit">Save goal</button>
+      </form>
+
+      <dl class="stats" aria-label="Your stats">
+        <div class="stats__item">
+          <dt class="stats__k">Tier</dt>
+          <dd class="stats__v">{{ rank.tier }}</dd>
+        </div>
+        <div class="stats__item">
+          <dt class="stats__k">ELO</dt>
+          <dd class="stats__v">{{ rank.elo }}</dd>
+        </div>
+        <div class="stats__item">
+          <dt class="stats__k">Workouts logged</dt>
+          <dd class="stats__v">{{ workouts_count }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2 class="h2">Recommended</h2>
+      <p class="muted">
+        {% if goal_label %}Showing programs for <strong>{{ goal_label }}</strong>.{% else %}Set a goal to see programs.{% endif %}
+      </p>
+
+      {% if recommendations and recommendations|length > 0 %}
+        <div class="list" role="list">
+          {% for w in recommendations %}
+            <article class="item" role="listitem" aria-label="Workout program">
+              <div class="item__main">
+                <div class="item__title">{{ w.title }}</div>
+                <div class="item__meta">
+                  <span class="pill">{{ w.level|default("beginner")|capitalize }}</span>
+                  <span class="pill">{{ w.days_per_week|default("?") }} days/week</span>
+                  <span class="pill pill--muted">{{ w.equipment|default("Equipment: —") }}</span>
+                </div>
+                {% if w.description %}
+                  <p class="item__desc">{{ w.description }}</p>
+                {% endif %}
+              </div>
+              <form method="post" action="{{ url_for('complete', workout_id=w.id) }}">
+                <button class="btn" type="submit">Complete</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty" role="status">
+          No programs to show yet. Choose a goal above.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+
