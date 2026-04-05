@@ -83,7 +83,7 @@ def create_app():
         state = _state()
         pts = complete_workout(state.user, w)
         _persist(state)
-        flash(f"Workout completed: +{pts} points.", "success")
+        flash(f"Workout completed: +{pts} {'point' if pts == 1 else 'points'}.", "success")
         return redirect(url_for("home"))
 
     @app.get("/history")

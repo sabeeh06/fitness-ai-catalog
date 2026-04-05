@@ -4,6 +4,7 @@ Fitness app core: user, rank, workout catalog, and recommendations.
 import csv
 import datetime
 import json
+import math
 from pathlib import Path
 
 
@@ -38,6 +39,9 @@ class User:
         u.workouts = list(data.get("workouts", []))
         u.rank = Rank.from_dict(data.get("rank", {}))
         return u
+    
+    def get_rank(self):
+        return self.rank
 
 
 class Rank:
@@ -50,20 +54,47 @@ class Rank:
         self._update_tier()
 
     def _update_tier(self):
-        if self.elo < 100:
-            self.tier = "Bronze"
-        elif self.elo < 250:
-            self.tier = "Silver"
-        elif self.elo < 500:
-            self.tier = "Gold"
-        else:
-            self.tier = "Platinum"
+        elo = self.elo
+
+        if elo == 0:
+            self.tier = "Unranked"
+            return
+
+        tiers = [
+            ("Iron", 0, 500),
+            ("Bronze", 500, 1000),
+            ("Silver", 1000, 1500),
+            ("Gold", 1500, 2000),
+            ("Platinum", 2000, 2500),
+            ("Diamond", 2500, 3000),
+            ("Master", 3000, 4000),
+            ("Grandmaster", 4000, float("inf")),
+        ]
+
+        divisions = ["V", "IV", "III", "II", "I"]
+
+        for name, low, high in tiers:
+            if low <= elo < high:
+                if name in ["Master", "Grandmaster"]:
+                    self.tier = name
+                    return
+                
+                rank_size = high - low
+                division_size = rank_size / len(divisions)
+
+                index = int((elo - low) / division_size)
+                index = min(index, len(divisions) - 1)
+
+                self.tier = f"{name} {divisions[index]}"
 
     def view(self):
         return {"tier": self.tier, "elo": self.elo}
 
     def to_dict(self):
         return {"elo": self.elo, "tier": self.tier}
+    
+    def get_elo(self):
+        return self.elo
 
     @staticmethod
     def from_dict(data):
@@ -73,9 +104,9 @@ class Rank:
         except (TypeError, ValueError):
             r.elo = 0
         r._update_tier()
-        if isinstance(data.get("tier"), str) and data.get("tier"):
+        #if isinstance(data.get("tier"), str) and data.get("tier"):
             # Tier is derived from ELO, but keep for forward-compat.
-            r.tier = data["tier"]
+        #    r.tier = data["tier"]
         return r
 
 
@@ -180,20 +211,39 @@ def get_goals():
     ]
 
 
-def points_for_level(level):
+def points_for_level(level, user):
     level = (level or "").lower()
-    if level == "beginner":
-        return 50
-    if level == "intermediate":
-        return 100
-    if level == "advanced":
-        return 150
-    return 50
+    elo = user.get_rank().get_elo()
+
+    #harder workouts give more points
+    base_points = {"beginner" : 40, "intermediate" : 50, "advanced" : 60}.get(level, 40)
+    
+    #workout points decrease as elo increases, exponentially based on how hard they are
+    #(eg. beginner workouts have the highest exponent)
+    exponent = 2.5 - (base_points - 40) / 40
+    scale = (2500 / (elo + 2500)) ** exponent
+
+    #weight of the point decrease is smaller for harder workouts, but goes to 1 as elo increases
+    weight = {"beginner" : 0.8, "intermediate" : 0.6, "advanced" : 0.4}.get(level, 0.8)
+    weight_dx = (2500 / (elo + 2500)) ** 0.25
+    final_weight = (weight * weight_dx)  + (1 - weight_dx)
+
+    #dilute scale based on workout difficulty
+    multiplier = (scale * final_weight) + (1 - final_weight)
+    
+    #the higher official rank you are, the less points you get from workouts at a flat rate
+    rank_penalty = 2 * math.floor(elo / 1000) + 1 if elo >= 3000 else math.floor(elo / 500)
+
+    #minimum points per workout, minimum is 1 for master+
+    min = 1 if elo >= 3000 else 5
+    final_points = max(base_points * multiplier - rank_penalty, min)
+
+    return math.floor(final_points)
 
 
 def complete_workout(user, workout):
     level = workout.get("level", "beginner")
-    points = points_for_level(level)
+    points = points_for_level(level, user)
     record = {
         "title": workout.get("title", "Workout"),
         "points": points,
