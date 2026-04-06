@@ -50,6 +50,9 @@ def create_app():
         goal_value = _selected_goal_value()
         recs = get_workouts_by_goal(workouts_db, goal_value) if goal_value else []
         user_rank = state.user.view_rank()
+        daily_decay = state.user.get_rank().get_decay()
+        today_points = state.user.get_today_points()
+        remaining_points = max(daily_decay - today_points, 0)
 
         return render_template(
             "home.html",
@@ -60,6 +63,9 @@ def create_app():
             recommendations=recs,
             rank=user_rank,
             workouts_count=len(state.user.get_history() or []),
+            daily_decay=daily_decay,
+            today_points = today_points,
+            remaining_points = remaining_points
         )
 
     @app.post("/goal")

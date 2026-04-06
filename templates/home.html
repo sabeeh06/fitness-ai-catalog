@@ -33,6 +33,47 @@
           <dd class="stats__v">{{ workouts_count }}</dd>
         </div>
       </dl>
+      <hr style="margin: 16px 0;">
+
+      <h2 class="h2">Today's Goal</h2>
+
+      {% if daily_decay == 0 %}
+        <p class="muted">No decay today.</p>
+      {% elif remaining_points == 0 %}
+        <p style="color: green; font-weight: 600;">
+          Daily goal complete!
+        </p>
+        <p class="muted">Progress: {{ today_points }} / {{ daily_decay }}</p>
+      {% elif remaining_points == 1 %}
+        <p>
+          Earn <strong>{{ remaining_points }}</strong> more point to reach today's goal!
+        </p>
+        <p class="muted">Progress: {{ today_points }} / {{ daily_decay }}</p>
+      {% else %}
+        <p>
+          Earn <strong>{{ remaining_points }}</strong> more points to reach today's goal!
+        </p>
+        <p class="muted">Progress: {{ today_points }} / {{ daily_decay }}</p>
+      {% endif %}
+
+      {% set progress_pct = ((today_points / daily_decay * 100) if daily_decay > 0 else 100) | int %}
+
+      <div style="background: #0c1424; width: 100%; height: 14px; border-radius: 8px; overflow: hidden;">
+        <div style="
+          width: {{ progress_pct }}%;
+          height: 100%;
+          transition: width 0.3s ease;
+          {% if progress_pct >= 100 %}
+            background: linear-gradient(90deg, #4ade80, #22c55e);  /* green */
+          {% elif progress_pct >= 50 %}
+            background: linear-gradient(90deg, #facc15, #eab308);  /* yellow */
+          {% else %}
+            background: linear-gradient(90deg, #f87171, #ef4444);  /* red */
+          {% endif %}
+          border-radius: 8px 0 0 8px;  /* round only the left side */
+        ">
+        </div>
+      </div>
     </div>
 
     <div class="card">

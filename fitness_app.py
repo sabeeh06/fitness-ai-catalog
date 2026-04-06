@@ -40,6 +40,15 @@ class User:
         u.rank = Rank.from_dict(data.get("rank", {}))
         return u
     
+    def get_today_points(self):
+        cur_date = datetime.date.today().isoformat()
+
+        return sum(
+            w.get("points", 0)
+            for w in self.get_history()
+            if w.get("date") == cur_date
+        )
+
     def get_rank(self):
         return self.rank
 
@@ -48,8 +57,10 @@ class Rank:
     def __init__(self):
         self.elo = 0
         self.tier = "Bronze"
+        self.last_decay = datetime.date.today()
 
     def update_rank(self, points):
+        self.decay()
         self.elo += points
         self._update_tier()
 
@@ -87,14 +98,48 @@ class Rank:
 
                 self.tier = f"{name} {divisions[index]}"
 
+    def decay(self):
+        cur_date = datetime.date.today()
+        time_passed = (cur_date - self.last_decay).days
+
+        if time_passed <= 0:
+            return
+        
+        #decay logic accounting for multiple days
+        cur_elo = self.elo
+        total_decay = 0
+        for i in range(time_passed):
+            decay = self.calculate_decay_smart(cur_elo)
+            decay = min(decay, cur_elo)
+            cur_elo -= decay
+            total_decay += decay
+
+        self.elo = max(0, cur_elo)
+        self.last_decay = cur_date
+        self._update_tier()
+
+    def calculate_decay(self):      
+        return math.floor(self.calculate_decay_smart(self.elo))
+    
+    def calculate_decay_smart(self, elo):
+        d = 25 + (elo / 100)
+        
+        return math.floor(d)
+
     def view(self):
+        self.decay()
         return {"tier": self.tier, "elo": self.elo}
 
     def to_dict(self):
-        return {"elo": self.elo, "tier": self.tier}
+        return {"elo": self.elo, "tier": self.tier, "last_decay": self.last_decay.isoformat()}
     
     def get_elo(self):
+        self.decay()
         return self.elo
+    
+    def get_decay(self):
+        self.decay()
+        return self.calculate_decay()
 
     @staticmethod
     def from_dict(data):
@@ -103,6 +148,14 @@ class Rank:
             r.elo = int(data.get("elo", 0))
         except (TypeError, ValueError):
             r.elo = 0
+        
+        last_decay = data.get("last_decay")
+        if last_decay:
+            r.last_decay = datetime.date.fromisoformat(last_decay)
+        else:
+            r.last_decay = datetime.date.today()
+        
+        r.decay()
         r._update_tier()
         #if isinstance(data.get("tier"), str) and data.get("tier"):
             # Tier is derived from ELO, but keep for forward-compat.
@@ -123,8 +176,10 @@ class Friend:
     @staticmethod
     def from_dict(data):
         name = (data.get("name") or "").strip()
-        elo = (data.get("rank") or {}).get("elo", 0)
-        return Friend(name=name, elo=elo)
+
+        friend = Friend(name=name)
+        friend.rank = Rank.from_dict(data.get("rank", {}))
+        return friend
 
 
 class AppState:
@@ -209,7 +264,6 @@ def get_goals():
         ("4", "Improve endurance", "endurance"),
         ("5", "Increase flexibility", "mobility"),
     ]
-
 
 def points_for_level(level, user):
     level = (level or "").lower()
