@@ -92,7 +92,7 @@ class User:
 class Rank:
     def __init__(self):
         self.elo = 0
-        self.tier = "Bronze"
+        self.tier = "Unranked"
         self.last_decay = datetime.date.today()
 
     def update_rank(self, points):
