@@ -3,10 +3,62 @@
 
 {% block content %}
 <section class="card">
-    <h1 class="h1">Your Profile</h1>
-    <p class="muted">Update your personal information and preferences.</p>
+    <div class="profile">
+        <div class="profile__header">
+            <div class="avatar" aria-label="Profile picture">
+                {% if profile.photo_url %}
+                    <img src="{{ profile.photo_url }}" alt="Profile picture" />
+                {% else %}
+                    <div class="avatar__fallback">{{ (profile.username or profile.full_name or "You")[:1]|upper }}</div>
+                {% endif %}
+            </div>
+            <div class="profile__meta">
+                <div class="profile__nameRow">
+                    <div class="profile__username">
+                        {{ profile.username or "Set a username" }}
+                    </div>
+                    {% if profile.full_name %}
+                        <div class="profile__fullname">{{ profile.full_name }}</div>
+                    {% endif %}
+                </div>
+                {% if profile.bio %}
+                    <p class="profile__bio">{{ profile.bio }}</p>
+                {% else %}
+                    <p class="profile__bio muted">Add a bio to tell people about your fitness journey.</p>
+                {% endif %}
 
-    <form method="post" class="form">
+                <div class="profile__stats" aria-label="Profile stats">
+                    <div class="statpill">
+                        <div class="statpill__k">Tier</div>
+                        <div class="statpill__v">{{ rank.tier }}</div>
+                    </div>
+                    <div class="statpill">
+                        <div class="statpill__k">ELO</div>
+                        <div class="statpill__v">{{ rank.elo }}</div>
+                    </div>
+                    <div class="statpill">
+                        <div class="statpill__k">Workouts</div>
+                        <div class="statpill__v">{{ total_workouts or 0 }}</div>
+                    </div>
+                    <div class="statpill">
+                        <div class="statpill__k">Points</div>
+                        <div class="statpill__v">{{ total_points or 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <details class="profile__edit" {% if not profile.username %}open{% endif %}>
+            <summary>Edit profile</summary>
+
+            <form method="post" class="form" enctype="multipart/form-data">
+        <div class="form__row">
+            <div class="form__field">
+                <label class="label" for="username">Username</label>
+                <input class="input" id="username" name="username" value="{{ profile.username or '' }}" required>
+            </div>
+        </div>
+
         <div class="form__row">
             <div class="form__field">
                 <label class="label" for="full_name">Full name</label>
@@ -22,6 +74,30 @@
             <div class="form__field">
                 <label class="label" for="photo_url">Photo URL</label>
                 <input class="input" id="photo_url" name="photo_url" placeholder="https://..." value="{{ profile.photo_url or '' }}">
+                <div class="muted" style="margin-top: 6px;">Or upload a picture below.</div>
+            </div>
+        </div>
+
+        <div class="form__row">
+            <div class="form__field">
+                <label class="label" for="photo_file">Upload profile picture</label>
+                <input class="input" id="photo_file" name="photo_file" type="file" accept="image/*">
+            </div>
+        </div>
+
+        {% if profile.photo_url %}
+        <div class="form__row">
+            <div class="form__field">
+                <label class="label">Current picture</label>
+                <img src="{{ profile.photo_url }}" alt="Profile picture" style="max-width: 140px; border-radius: 14px; display:block; border: 1px solid rgba(255,255,255,0.12);" />
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form__row">
+            <div class="form__field">
+                <label class="label" for="bio">Bio</label>
+                <textarea class="input" id="bio" name="bio" rows="4" placeholder="Tell people about your fitness journey...">{{ profile.bio or '' }}</textarea>
             </div>
         </div>
 
@@ -97,8 +173,10 @@
 
         <div class="form__row">
             <button class="btn btn--primary" type="submit">Save profile</button>
-            <a class="btn" href="{{ url_for('home') }}">Cancel</a>
+            <a class="btn" href="{{ url_for('profile') }}">Cancel</a>
         </div>
     </form>
+        </details>
+    </div>
 </section>
 {% endblock %}

@@ -2,6 +2,7 @@ import os
 from urllib.parse import urlencode
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for, g
+from werkzeug.utils import secure_filename
 
 import datetime
 from collections import defaultdict
@@ -21,6 +22,8 @@ def create_app():
     app = Flask(__name__)
 
     app.secret_key = os.environ.get("FITNESS_APP_SECRET_KEY", "dev-secret-key-change-me")
+    app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     workouts_db = load_workouts()
 
@@ -33,11 +36,12 @@ def create_app():
         state = _state()
         profile = state.user.profile
         theme = profile.get("theme", "dark")
-        full_name = profile.get("full_name", "")
+        # Prefer username for UI display; fall back to full name.
+        display_name = (profile.get("username") or "").strip() or (profile.get("full_name") or "").strip()
         return {
             "profile": profile,
             "theme": theme,
-            "user_full_name": full_name,
+            "user_display_name": display_name,
         }
 
     def _state():
@@ -60,6 +64,11 @@ def create_app():
 
     @app.get("/")
     def home():
+        # Make Profile the new home page.
+        return redirect(url_for("profile"))
+
+    @app.get("/workouts")
+    def workouts():
         state = _state()
         goal_value = _selected_goal_value()
         recs = get_workouts_by_goal(workouts_db, goal_value) if goal_value else []
@@ -70,7 +79,7 @@ def create_app():
 
         return render_template(
             "home.html",
-            page="home",
+            page="workouts",
             goals=goals,
             goal_value=goal_value,
             goal_label=goal_value_to_label.get(goal_value, ""),
@@ -78,8 +87,8 @@ def create_app():
             rank=user_rank,
             workouts_count=len(state.user.get_history() or []),
             daily_decay=daily_decay,
-            today_points = today_points,
-            remaining_points = remaining_points
+            today_points=today_points,
+            remaining_points=remaining_points,
         )
 
     @app.post("/goal")
@@ -88,23 +97,23 @@ def create_app():
         goal_value = goal_label_to_value.get(label, "")
         if not goal_value:
             flash("Pick a valid goal.", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("workouts"))
         session["goal"] = goal_value
         flash(f"Goal set to “{label}”.", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("workouts"))
 
     @app.post("/complete/<workout_id>")
     def complete(workout_id):
         w = _find_workout_by_id(workout_id)
         if not w:
             flash("That workout could not be found.", "error")
-            return redirect(url_for("home"))
+            return redirect(url_for("workouts"))
 
         state = _state()
         pts = complete_workout(state.user, w)
         _persist(state)
         flash(f"Workout completed: +{pts} {'point' if pts == 1 else 'points'}.", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("workouts"))
 
     @app.get("/history")
     def history():
@@ -271,15 +280,36 @@ def create_app():
     @app.get("/profile")
     def profile():
         state = _state()
-        return render_template("profile.html", page="profile", rank=state.user.view_rank())
+        workouts = list(state.user.get_history() or [])
+        total_workouts = len(workouts)
+        total_points = sum(w.get("points", 0) for w in workouts)
+        return render_template(
+            "profile.html",
+            page="profile",
+            rank=state.user.view_rank(),
+            total_workouts=total_workouts,
+            total_points=total_points,
+        )
 
     @app.post("/profile")
     def update_profile():
         state = _state()
+        photo_url = request.form.get("photo_url", "")
+        uploaded = request.files.get("photo_file")
+        if uploaded and uploaded.filename:
+            filename = secure_filename(uploaded.filename)
+            # Keep a small safety net even after secure_filename.
+            if filename:
+                save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+                uploaded.save(save_path)
+                photo_url = url_for("static", filename=f"uploads/{filename}")
+
         updates = {
+            "username": request.form.get("username", ""),
             "full_name": request.form.get("full_name", ""),
             "email": request.form.get("email", ""),
-            "photo_url": request.form.get("photo_url", ""),
+            "photo_url": photo_url,
+            "bio": request.form.get("bio", ""),
             "height_cm": request.form.get("height_cm"),
             "weight_kg": request.form.get("weight_kg"),
             "age": request.form.get("age"),

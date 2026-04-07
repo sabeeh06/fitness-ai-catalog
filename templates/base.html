@@ -22,11 +22,12 @@
           <div class="brand__sub">Tier: {{ rank.tier }} · {{ rank.elo }} ELO</div>
         </div>
         <div class="brand__sub">
-          {% if user_full_name %}{{ user_full_name }} · {% endif %}
+          {% if user_display_name %}{{ user_display_name }} · {% endif %}
           Tier: {{ rank.tier }} · {{ rank.elo }} ELO
         </div>
         <nav class="nav" aria-label="Primary">
-          <a class="nav__link {% if page=='home' %}is-active{% endif %}" href="{{ url_for('home') }}">Home</a>
+          <a class="nav__link {% if page=='profile' %}is-active{% endif %}" href="{{ url_for('profile') }}">Home</a>
+          <a class="nav__link {% if page=='workouts' %}is-active{% endif %}" href="{{ url_for('workouts') }}">Workouts</a>
           <a class="nav__link {% if page=='history' %}is-active{% endif %}" href="{{ url_for('history') }}">History</a>
           <a class="nav__link {% if page=='friends' %}is-active{% endif %}" href="{{ url_for('friends') }}">Friends</a>
           <a class="nav__link {% if page=='profile' %}is-active{% endif %}" href="{{ url_for('profile') }}">Profile</a>

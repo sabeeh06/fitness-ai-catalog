@@ -21,9 +21,11 @@ class User:
         self.rank = Rank()
 
         self.profile = {
+            "username": "",
             "full_name": "",
             "email": "",
             "photo_url": "",
+            "bio": "",
             "height_cm": None,
             "weight_kg": None,
             "age": None,
