@@ -1,7 +1,10 @@
 import os
 from urllib.parse import urlencode
 
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for, g
+
+import datetime
+from collections import defaultdict
 
 from fitness_app import (
     Friend,
@@ -17,7 +20,6 @@ from fitness_app import (
 def create_app():
     app = Flask(__name__)
 
-    # Dev-friendly default; override in production via env var.
     app.secret_key = os.environ.get("FITNESS_APP_SECRET_KEY", "dev-secret-key-change-me")
 
     workouts_db = load_workouts()
@@ -25,6 +27,18 @@ def create_app():
     goals = get_goals()
     goal_value_to_label = {value: label for _num, label, value in goals}
     goal_label_to_value = {label: value for _num, label, value in goals}
+
+    @app.context_processor
+    def inject_user_profile():
+        state = _state()
+        profile = state.user.profile
+        theme = profile.get("theme", "dark")
+        full_name = profile.get("full_name", "")
+        return {
+            "profile": profile,
+            "theme": theme,
+            "user_full_name": full_name,
+        }
 
     def _state():
         return load_state()
@@ -94,15 +108,108 @@ def create_app():
 
     @app.get("/history")
     def history():
+        import datetime
+        from collections import defaultdict
         state = _state()
-        items = list(state.user.get_history() or [])
-        items = items[::-1]
+        workouts = list(state.user.get_history() or [])
+        workouts_sorted = sorted(workouts, key=lambda w: w.get("date", ""))
+
+        # 1. Points per workout
+        dates = [w.get("date", "") for w in workouts_sorted]
+        points = [w.get("points", 0) for w in workouts_sorted]
+
+        # 2. Cumulative points (ELO)
+        cumulative = []
+        running = 0
+        for p in points:
+            running += p
+            cumulative.append(running)
+
+        # 3. Weekly frequency (last 8 weeks)
+        today = datetime.date.today()
+        start_of_week = today - datetime.timedelta(days=today.weekday())
+        weeks = []
+        week_labels = []
+        for i in range(8, 0, -1):
+            week_start = start_of_week - datetime.timedelta(weeks=i)
+            week_end = week_start + datetime.timedelta(days=6)
+            weeks.append((week_start, week_end))
+            week_labels.append(week_start.strftime("%b %d"))
+
+        weekly_counts = []
+        for ws, we in weeks:
+            count = 0
+            for w in workouts_sorted:
+                if w.get("date"):
+                    wd = datetime.date.fromisoformat(w["date"])
+                    if ws <= wd <= we:
+                        count += 1
+            weekly_counts.append(count)
+
+        # 4. Workout distribution by goal (using catalog)
+        goal_map = {}
+        for cat_w in workouts_db:
+            title = cat_w.get("title", "")
+            goal = cat_w.get("goal", "Other")
+            if title:
+                goal_map[title] = goal
+        goal_counts = defaultdict(int)
+        for w in workouts_sorted:
+            title = w.get("title", "")
+            goal = goal_map.get(title, "Other")
+            goal_counts[goal] += 1
+        goal_labels = list(goal_counts.keys())
+        goal_values = list(goal_counts.values())
+
+        # 5. Longest streak (consecutive days with at least one workout)
+        workout_dates_set = set()
+        for w in workouts_sorted:
+            if w.get("date"):
+                workout_dates_set.add(w["date"])
+        sorted_dates = sorted(workout_dates_set)
+        longest_streak = 0
+        current_streak = 0
+        prev_date = None
+        for d_str in sorted_dates:
+            d = datetime.date.fromisoformat(d_str)
+            if prev_date is None:
+                current_streak = 1
+            elif (d - prev_date).days == 1:
+                current_streak += 1
+            else:
+                current_streak = 1
+            longest_streak = max(longest_streak, current_streak)
+            prev_date = d
+
+        # 6. Additional stats
+        total_workouts = len(workouts)
+        total_points = sum(points)
+        avg_points = total_points / total_workouts if total_workouts > 0 else 0
+
+        chart_data = {
+            "dates": dates,
+            "points": points,
+            "cumulative": cumulative,
+            "week_labels": week_labels,
+            "weekly_counts": weekly_counts,
+            "goal_labels": goal_labels,
+            "goal_values": goal_values,
+            "total_workouts": total_workouts,
+            "total_points": total_points,
+            "avg_points": round(avg_points, 1),
+            "longest_streak": longest_streak,
+            "current_rank": state.user.view_rank()["tier"],
+        }
+
+        history_display = workouts[::-1]
         return render_template(
             "history.html",
             page="history",
             rank=state.user.view_rank(),
-            history=items,
+            history=history_display,
+            chart_data=chart_data,
         )
+
 
     @app.get("/friends")
     def friends():
@@ -160,6 +267,34 @@ def create_app():
         _persist(state)
         flash("Friend removed.", "success")
         return redirect(url_for("friends"))
+
+    @app.get("/profile")
+    def profile():
+        state = _state()
+        return render_template("profile.html", page="profile", rank=state.user.view_rank())
+
+    @app.post("/profile")
+    def update_profile():
+        state = _state()
+        updates = {
+            "full_name": request.form.get("full_name", ""),
+            "email": request.form.get("email", ""),
+            "photo_url": request.form.get("photo_url", ""),
+            "height_cm": request.form.get("height_cm"),
+            "weight_kg": request.form.get("weight_kg"),
+            "age": request.form.get("age"),
+            "gender": request.form.get("gender", ""),
+            "target_weight_kg": request.form.get("target_weight_kg"),
+            "activity_level": request.form.get("activity_level", "moderate"),
+            "chest_cm": request.form.get("chest_cm"),
+            "waist_cm": request.form.get("waist_cm"),
+            "hips_cm": request.form.get("hips_cm"),
+            "theme": request.form.get("theme", "dark"),
+        }
+        state.user.update_profile(updates)
+        _persist(state)
+        flash("Profile updated successfully.", "success")
+        return redirect(url_for("profile"))
 
     @app.get("/health")
     def health():

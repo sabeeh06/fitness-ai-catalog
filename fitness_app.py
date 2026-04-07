@@ -20,9 +20,41 @@ class User:
         self.workouts = []
         self.rank = Rank()
 
+        self.profile = {
+            "full_name": "",
+            "email": "",
+            "photo_url": "",
+            "height_cm": None,
+            "weight_kg": None,
+            "age": None,
+            "gender": "",
+            "target_weight_kg": None,
+            "activity_level": "moderate",
+            "chest_cm": None,
+            "waist_cm": None,
+            "hips_cm": None,
+            "theme": "dark",
+        }
+
     def add_workout(self, workout):
         self.workouts.append(workout)
         self.rank.update_rank(workout["points"])
+
+    def update_profile(self, updates):
+        """Update profile fields from a dict (sanitized)."""
+        allowed_keys = self.profile.keys()
+        for key, value in updates.items():
+            if key in allowed_keys:
+                if key in ["height_cm", "weight_kg", "age", "target_weight_kg", "chest_cm", "waist_cm", "hips_cm"]:
+                    if value == "" or value is None:
+                        self.profile[key] = None
+                    else:
+                        try:
+                            self.profile[key] = float(value) if '.' in str(value) else int(value)
+                        except ValueError:
+                            pass
+                else:
+                    self.profile[key] = value.strip() if isinstance(value, str) else value
 
     def get_history(self):
         return self.workouts
@@ -31,13 +63,15 @@ class User:
         return self.rank.view()
 
     def to_dict(self):
-        return {"workouts": list(self.workouts), "rank": self.rank.to_dict()}
+        return {"workouts": list(self.workouts), "rank": self.rank.to_dict(), "profile": self.profile.copy()}
 
     @staticmethod
     def from_dict(data):
         u = User()
         u.workouts = list(data.get("workouts", []))
         u.rank = Rank.from_dict(data.get("rank", {}))
+        if "profile" in data and isinstance(data["profile"], dict):
+            u.profile.update(data["profile"])
         return u
     
     def get_today_points(self):
@@ -243,7 +277,7 @@ def load_workouts(filename="fitness_catalog.csv"):
         # Strip any extra key from trailing comma in header
         fieldnames = [k.strip() for k in reader.fieldnames if k.strip()]
         for row in reader:
-            row = {k.strip(): v.strip() if isinstance(v, str) else v for k, v in row.items() if k.strip()}
+            row = {k.strip(): v.strip() if isinstance(v, str) else v for k, v in row.items() if k is not None and k.strip()}
             if row.get("id") and row.get("title"):
                 workouts.append(row)
     return workouts

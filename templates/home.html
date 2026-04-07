@@ -83,26 +83,26 @@
       </p>
 
       {% if recommendations and recommendations|length > 0 %}
-        <div class="list" role="list">
-          {% for w in recommendations %}
-            <article class="item" role="listitem" aria-label="Workout program">
-              <div class="item__main">
-                <div class="item__title">{{ w.title }}</div>
-                <div class="item__meta">
-                  <span class="pill">{{ w.level|default("beginner")|capitalize }}</span>
-                  <span class="pill">{{ w.days_per_week|default("?") }} days/week</span>
-                  <span class="pill pill--muted">{{ w.equipment|default("Equipment: —") }}</span>
-                </div>
-                {% if w.description %}
-                  <p class="item__desc">{{ w.description }}</p>
-                {% endif %}
-              </div>
-              <form method="post" action="{{ url_for('complete', workout_id=w.id) }}">
-                <button class="btn" type="submit">Complete</button>
-              </form>
-            </article>
-          {% endfor %}
-        </div>
+      <div class="list" role="list" style="max-height: 500px; overflow-y: auto; padding-right: 8px;">
+        {% for w in recommendations %}
+        <article class="item" role="listitem" aria-label="Workout program">
+          <div class="item__main">
+            <div class="item__title">{{ w.title }}</div>
+            <div class="item__meta">
+              <span class="pill">{{ w.level|default("beginner")|capitalize }}</span>
+              <span class="pill">{{ w.days_per_week|default("?") }} days/week</span>
+              <span class="pill pill--muted">{{ w.equipment|default("Equipment: —") }}</span>
+            </div>
+            {% if w.description %}
+            <p class="item__desc">{{ w.description }}</p>
+            {% endif %}
+          </div>
+          <form method="post" action="{{ url_for('complete', workout_id=w.id) }}">
+            <button class="btn" type="submit">Complete</button>
+          </form>
+        </article>
+        {% endfor %}
+      </div>
       {% else %}
         <div class="empty" role="status">
           No programs to show yet. Choose a goal above.

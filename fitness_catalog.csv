@@ -1,12 +1,70 @@
-id,title,goal,level,days_per_week,description,equipment,
-1,Beginner Full Body Reset,fat loss,beginner,3,Full-body plan focusing on form, consistency,"[' and light cardio finishers', 'home']"
-2,Push Pull Legs Hypertrophy,muscle gain,intermediate,6,Classic PPL split with progressive overload and accessory work,gym,
-3,5K Run Builder,endurance,beginner,4,Run-walk progression to build aerobic base and reach a 5K,home,
-4,Strength Fundamentals,strength,beginner,3,Barbell basics with simple linear progression on core lifts,gym,
-5,Upper/Lower Split,muscle gain,intermediate,4,Upper and lower days with compound focus and balanced volume,gym,
-6,HIIT + Core,fat loss,intermediate,3,Short interval sessions paired with core stability circuits,home,
-7,Mobility & Posture,mobility,beginner,5,Daily mobility flows targeting hips, shoulders,"[' and thoracic spine', 'home']"
-8,Athletic Conditioning,performance,advanced,5,Power + conditioning sessions built around sprint and plyo work,gym,
-9,Home Dumbbell Only,muscle gain,beginner,4,Dumbbell-only program with full-body emphasis and tempo control,home,
-10,Lean Bulk Builder,muscle gain,advanced,6,High-volume hypertrophy plan with periodized intensity blocks,gym,
-11,6 K Run,Fat Loss,advanced,2,6 k run,none,
+id,title,goal,level,days_per_week,description,equipment
+1,Beginner Full Body Reset,fat loss,beginner,3,Full-body plan focusing on form, consistency, and light cardio finishers,home
+2,Push Pull Legs Hypertrophy,muscle gain,intermediate,6,Classic PPL split with progressive overload and accessory work,gym
+3,5K Run Builder,endurance,beginner,4,Run-walk progression to build aerobic base and reach a 5K,outdoors
+4,Strength Fundamentals,strength,beginner,3,Barbell basics with simple linear progression on core lifts,gym
+5,Upper/Lower Split,muscle gain,intermediate,4,Upper and lower days with compound focus and balanced volume,gym
+6,HIIT + Core,fat loss,intermediate,3,Short interval sessions paired with core stability circuits,home
+7,Mobility & Posture,mobility,beginner,5,Daily mobility flows targeting hips, shoulders, and thoracic spine,home
+8,Athletic Conditioning,performance,advanced,5,Power + conditioning sessions built around sprint and plyo work,gym
+9,Home Dumbbell Only,muscle gain,beginner,4,Dumbbell-only program with full-body emphasis and tempo control,home
+10,Lean Bulk Builder,muscle gain,advanced,6,High-volume hypertrophy plan with periodized intensity blocks,gym
+11,6K Run,fat loss,advanced,2,6 kilometer run for fat burning,none
+12,Foundational Full Body,muscle gain,beginner,3,A complete full-body workout for beginners using compound movements,home
+13,Basic Barbell Strength,muscle gain,beginner,3,Simple 3x5 routine with basic barbell lifts to build strength,barbell
+14,Full Body Tone,muscle gain,beginner,3,Full-body workout with higher repetitions for muscle definition,dumbbells
+15,Beginner Hypertrophy,muscle gain,beginner,4,4-day upper/lower split for beginners ready to increase volume,gym
+16,PPL Lite,muscle gain,intermediate,4,4-day Push/Pull/Legs split for focused growth,gym
+17,Upper/Lower Power,muscle gain,intermediate,4,4-day power-focused split alternating upper and lower body,gym
+18,PHUL,muscle gain,intermediate,4,Power Hypertrophy Upper Lower - combines heavy and high-rep work,gym
+19,Body Part Split,muscle gain,intermediate,5,Classic 5-day split: Chest, Back, Shoulders, Legs, Arms,gym
+20,PPL Advanced,muscle gain,advanced,6,6-day PPL split hitting each muscle group twice per week,gym
+21,PPLUL,muscle gain,advanced,5,5-day Push/Pull/Legs/Upper/Lower for advanced lifters,gym
+22,High-Frequency Full Body,muscle gain,advanced,5,Full body 5 days a week with varying exercises,gym
+23,Metabolic Full Body,fat loss,beginner,3,Full-body circuit to elevate heart rate and burn calories,home
+24,Bodyweight HIIT Blast,fat loss,beginner,3,HIIT using only bodyweight exercises for maximum calorie burn,none
+25,At-Home Cardio Burn,fat loss,beginner,3,Cardio routine with jogging, jumping jacks, high knees,none
+26,LISS for Weight Loss,fat loss,beginner,4,Low-Intensity Steady-State cardio for sustained calorie burn,outdoors
+27,Full Body Metabolic,fat loss,intermediate,4,Compound strength with high-intensity cardio circuits,gym
+28,HIIT the Limit,fat loss,intermediate,4,4-day program focused on HIIT and EPOC effect,gym
+29,Upper/Lower Fat Burn,fat loss,intermediate,4,Upper/lower split with higher reps and cardio bursts,gym
+30,PPL Fat Loss,fat loss,advanced,5,5-day PPL with conditioning finishers,gym
+31,6-Day Shred,fat loss,advanced,6,High-volume weight training with daily cardio,gym
+32,Hypertrophy & HIIT Fusion,fat loss,advanced,5,Hypertrophy lifting with separate HIIT sessions,gym
+33,Functional Full Body,strength,beginner,3,Functional movements to improve daily activity performance,home
+34,The r/Fitness Beginner,strength,beginner,3,Simple 3-day routine focused on standard barbell lifts,barbell
+35,The 3-Day Full Body,strength,beginner,3,Classic 3-day full-body plan for fundamental strength,gym
+36,Strength Foundation,strength,intermediate,4,4-day upper/lower split focusing on progressive overload,gym
+37,PHUL Strength,strength,intermediate,4,Power Hypertrophy Upper Lower with strength emphasis,gym
+38,4-Day PPL Strength,strength,intermediate,4,4-day PPL with strength focus on compound lifts,gym
+39,Tactical Strength,strength,advanced,5,5-day plan for functional fitness and athletic performance,gym
+40,Advanced Powerlifting,strength,advanced,5,5-day program focused on Squat, Bench, Deadlift,gym
+41,5-Day Full Body Strength,strength,advanced,5,High-frequency 5-day full-body for advanced lifters,gym
+42,3-Day Endurance Foundation,endurance,beginner,3,Build basic aerobic base with runs, cycling, or swimming,outdoors
+43,Base Building,endurance,beginner,3,Base training plan for new runners or cyclists,outdoors
+44,Cardio Kickstart,endurance,beginner,3,Low-impact steady-state cardio for cardiovascular health,home
+45,4-Day Stamina Builder,endurance,intermediate,4,Mixes steady-state runs, interval training, recovery,outdoors
+46,Muscular Endurance Circuit,endurance,intermediate,4,Circuit training with high repetitions,gym
+47,Advanced Run Training,endurance,advanced,5,Speed work, tempo runs, long slow distance,outdoors
+48,5-Day Endurance Focus,endurance,advanced,5,Concurrent training with emphasis on cardiovascular endurance,gym
+49,Competitor's Base,endurance,advanced,6,High-volume plan for competitive endurance athletes,outdoors
+50,3-Day Flexibility,mobility,beginner,3,Static and dynamic stretching to improve range of motion,home
+51,Morning Mobility,mobility,beginner,3,Gentle routine to improve joint mobility and flexibility,home
+52,Yoga for Beginners,mobility,beginner,3,Yoga routine for flexibility, balance, and core strength,yoga mat
+53,Intermediate Mobility Flow,mobility,intermediate,4,Blends yoga and Pilates for core strength and flexibility,yoga mat
+54,Yoga-Pilates Fusion,mobility,intermediate,4,Fusion workout combining Pilates strength with Yoga flexibility,yoga mat
+55,4-Day Flexibility Challenge,mobility,intermediate,4,Program to significantly increase overall body flexibility,home
+56,Advanced Deep Stretch,mobility,advanced,5,Deep stretching and myofascial release,yoga mat
+57,5-Day Mobility Peak,mobility,advanced,5,High-frequency plan to unlock peak mobility,yoga mat
+58,Full Body ROM,mobility,advanced,5,Dedicated to improving full body range of motion,yoga mat
+59,The Flexibility Protocol,mobility,advanced,5,Science-based protocol for maximum flexibility,yoga mat
+60,Sprint Intervals,performance,beginner,3,Basic sprint interval training for power and speed,outdoors
+61,Agility Ladder Drills,performance,beginner,3,Footwork and coordination drills for athletic performance,home
+62,Power Clean Foundation,performance,intermediate,4,Learn and practice Olympic lifting for explosive power,gym
+63,Plyometric Circuit,performance,intermediate,4,Box jumps, broad jumps, and plyo push-ups,gym
+64,Advanced Speed & Power,performance,advanced,5,Complex training with sprints, plyos, and Olympic lifts,gym
+65,Competitive Athlete Prep,performance,advanced,5,Sport-specific conditioning and power development,gym
+66,Beginner Athletic Foundation,performance,beginner,3,Foundational movements for coordination and basic power,home
+67,Intermediate Explosive Training,performance,intermediate,4,Kettlebell swings, box jumps, and medicine ball throws,gym
+68,Advanced Olympic Lifting,performance,advanced,5,Full Olympic lifting program with snatch and clean & jerk,gym
+69,Sports Conditioning Circuit,performance,intermediate,4,High-intensity circuit mimicking game-like demands,gym

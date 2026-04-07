@@ -1,33 +1,165 @@
 {% extends "base.html" %}
-{% block title %}Fitness · History{% endblock %}
+{% block title %}Fitness · History & Analytics{% endblock %}
 
 {% block content %}
-  <section class="card">
-    <h1 class="h1">Workout history</h1>
-    <p class="muted">Your most recent workouts appear first.</p>
+<section class="card">
+  <h1 class="h1">Workout History & Analytics</h1>
+  <p class="muted">Track your progress over time with detailed charts.</p>
 
-    {% if history and history|length > 0 %}
-      <div class="table" role="table" aria-label="Workout history table">
-        <div class="table__head" role="rowgroup">
-          <div class="table__row" role="row">
-            <div class="table__cell table__cell--head" role="columnheader">Date</div>
-            <div class="table__cell table__cell--head" role="columnheader">Workout</div>
-            <div class="table__cell table__cell--head" role="columnheader">Points</div>
-          </div>
-        </div>
-        <div class="table__body" role="rowgroup">
-          {% for w in history %}
-            <div class="table__row" role="row">
-              <div class="table__cell" role="cell">{{ w.date|default("") }}</div>
-              <div class="table__cell" role="cell">{{ w.title|default("Workout") }}</div>
-              <div class="table__cell" role="cell">+{{ w.points|default(0) }}</div>
-            </div>
-          {% endfor %}
-        </div>
+  {% if history and history|length > 0 %}
+  <div class="stats" style="margin-bottom: 24px;">
+    <div class="stats__item">
+      <dt class="stats__k">Total Workouts</dt>
+      <dd class="stats__v">{{ chart_data.total_workouts }}</dd>
+    </div>
+    <div class="stats__item">
+      <dt class="stats__k">Total Points</dt>
+      <dd class="stats__v">{{ chart_data.total_points }}</dd>
+    </div>
+    <div class="stats__item">
+      <dt class="stats__k">Avg Points / Workout</dt>
+      <dd class="stats__v">{{ chart_data.avg_points }}</dd>
+    </div>
+    <div class="stats__item">
+      <dt class="stats__k">Current Rank</dt>
+      <dd class="stats__v">{{ chart_data.current_rank }}</dd>
+    </div>
+    <div class="stats__item">
+      <dt class="stats__k">Longest Streak</dt>
+      <dd class="stats__v">{{ chart_data.longest_streak }} days</dd>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 32px;">
+
+    <div style="background: rgba(15,23,42,0.5); border-radius: 16px; padding: 16px;">
+      <h3 class="h2">Points per Workout</h3>
+      <canvas id="pointsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
+    </div>
+
+    <div style="background: rgba(15,23,42,0.5); border-radius: 16px; padding: 16px;">
+      <h3 class="h2">Cumulative Points (ELO Growth)</h3>
+      <canvas id="cumulativeChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
+    </div>
+
+    <div style="background: rgba(15,23,42,0.5); border-radius: 16px; padding: 16px;">
+      <h3 class="h2">Workouts per Week (Last 8 Weeks)</h3>
+      <canvas id="weeklyChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
+    </div>
+
+    <div style="background: rgba(15,23,42,0.5); border-radius: 16px; padding: 16px;">
+      <h3 class="h2">Workout Distribution by Goal</h3>
+      <canvas id="goalChart" width="300" height="300" style="max-width: 250px; height: auto; display: block; margin: 0 auto;"></canvas>
+    </div>
+  </div>
+
+  <h2 class="h2">Detailed Log</h2>
+  <div class="table" role="table" aria-label="Workout history table">
+    <div class="table__head" role="rowgroup">
+      <div class="table__row" role="row">
+        <div class="table__cell table__cell--head" role="columnheader">Date</div>
+        <div class="table__cell table__cell--head" role="columnheader">Workout</div>
+        <div class="table__cell table__cell--head" role="columnheader">Points</div>
       </div>
-    {% else %}
-      <div class="empty" role="status">No workouts completed yet.</div>
-    {% endif %}
-  </section>
-{% endblock %}
+    </div>
+    <div class="table__body" role="rowgroup">
+      {% for w in history %}
+      <div class="table__row" role="row">
+        <div class="table__cell" role="cell">{{ w.date|default("") }}</div>
+        <div class="table__cell" role="cell">{{ w.title|default("Workout") }}</div>
+        <div class="table__cell" role="cell">+{{ w.points|default(0) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty" role="status">No workouts completed yet. Complete a workout on the Home page to see analytics.</div>
+  {% endif %}
+</section>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data | tojson }};
+
+    // Points per workout (line)
+    if (chartData.points && chartData.points.length) {
+      new Chart(document.getElementById('pointsChart'), {
+        type: 'line',
+        data: {
+          labels: chartData.dates,
+          datasets: [{
+            label: 'Points earned',
+            data: chartData.points,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.1)',
+            fill: true,
+            tension: 0.2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            tooltip: { callbacks: { label: (ctx) => `${ctx.raw} points` } }
+          }
+        }
+      });
+    }
+
+    // Cumulative points (line)
+    if (chartData.cumulative && chartData.cumulative.length) {
+      new Chart(document.getElementById('cumulativeChart'), {
+        type: 'line',
+        data: {
+          labels: chartData.dates,
+          datasets: [{
+            label: 'Total points (ELO)',
+            data: chartData.cumulative,
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34,197,94,0.1)',
+            fill: true,
+            tension: 0.2,
+            pointRadius: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+
+    // Weekly frequency (bar)
+    if (chartData.week_labels && chartData.weekly_counts) {
+      new Chart(document.getElementById('weeklyChart'), {
+        type: 'bar',
+        data: {
+          labels: chartData.week_labels,
+          datasets: [{
+            label: 'Workouts',
+            data: chartData.weekly_counts,
+            backgroundColor: '#facc15',
+            borderRadius: 8
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: true }
+      });
+    }
+
+    // Goal distribution (pie)
+    if (chartData.goal_labels && chartData.goal_values && chartData.goal_labels.length) {
+      new Chart(document.getElementById('goalChart'), {
+        type: 'pie',
+        data: {
+          labels: chartData.goal_labels,
+          datasets: [{
+            data: chartData.goal_values,
+            backgroundColor: ['#3b82f6', '#ef4444', '#22c55e', '#facc15', '#a855f7', '#ec489a']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+  });
+</script>
+{% endblock %}

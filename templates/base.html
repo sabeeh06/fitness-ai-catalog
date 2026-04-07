@@ -4,7 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Fitness{% endblock %}</title>
+    <!link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+    {% if theme == 'light' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='app-light.css') }}" />
+    {% else %}
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+    {% endif %}
     <meta name="color-scheme" content="dark light" />
   </head>
   <body>
@@ -16,10 +21,15 @@
           <div class="brand__title">Fitness</div>
           <div class="brand__sub">Tier: {{ rank.tier }} · {{ rank.elo }} ELO</div>
         </div>
+        <div class="brand__sub">
+          {% if user_full_name %}{{ user_full_name }} · {% endif %}
+          Tier: {{ rank.tier }} · {{ rank.elo }} ELO
+        </div>
         <nav class="nav" aria-label="Primary">
           <a class="nav__link {% if page=='home' %}is-active{% endif %}" href="{{ url_for('home') }}">Home</a>
           <a class="nav__link {% if page=='history' %}is-active{% endif %}" href="{{ url_for('history') }}">History</a>
           <a class="nav__link {% if page=='friends' %}is-active{% endif %}" href="{{ url_for('friends') }}">Friends</a>
+          <a class="nav__link {% if page=='profile' %}is-active{% endif %}" href="{{ url_for('profile') }}">Profile</a>
         </nav>
       </div>
     </header>
