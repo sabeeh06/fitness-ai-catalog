@@ -1,3 +1,7 @@
+"""
+Flask web application for the fitness app.
+Provides routes for profile, workouts, history, friends, and analytics.
+"""
 import os
 from urllib.parse import urlencode
 
@@ -19,20 +23,26 @@ from fitness_app import (
 
 
 def create_app():
+    """Create and configure the Flask application."""
     app = Flask(__name__)
 
+    # Secret key for session management
     app.secret_key = os.environ.get("FITNESS_APP_SECRET_KEY", "dev-secret-key-change-me")
+    # Folder for uploaded profile photos
     app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "uploads")
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
+    # Load workout catalog once at startup
     workouts_db = load_workouts()
 
+    # Goal mappings (label <-> value)
     goals = get_goals()
     goal_value_to_label = {value: label for _num, label, value in goals}
     goal_label_to_value = {label: value for _num, label, value in goals}
 
     @app.context_processor
     def inject_user_profile():
+        """Inject profile data and theme into all templates."""
         state = _state()
         profile = state.user.profile
         theme = profile.get("theme", "dark")
@@ -45,17 +55,21 @@ def create_app():
         }
 
     def _state():
+        """Load current app state from disk."""
         return load_state()
 
     def _persist(state):
+        """Save app state to disk."""
         save_state(state)
 
     def _selected_goal_value():
+        """Get the currently selected goal from session."""
         raw = (session.get("goal") or "").strip()
         valid = {value for _n, _l, value in goals}
         return raw if raw in valid else ""
 
     def _find_workout_by_id(workout_id):
+        """Find a workout in the catalog by its ID."""
         wid = str(workout_id).strip()
         for w in workouts_db:
             if str(w.get("id", "")).strip() == wid:
@@ -64,11 +78,13 @@ def create_app():
 
     @app.get("/")
     def home():
+        """Redirect root to profile page (new home)."""
         # Make Profile the new home page.
         return redirect(url_for("profile"))
 
     @app.get("/workouts")
     def workouts():
+        """Show workout recommendations and daily goal progress."""
         state = _state()
         goal_value = _selected_goal_value()
         recs = get_workouts_by_goal(workouts_db, goal_value) if goal_value else []
@@ -93,6 +109,7 @@ def create_app():
 
     @app.post("/goal")
     def set_goal():
+        """Save the user's selected fitness goal in session."""
         label = (request.form.get("goal_label") or "").strip()
         goal_value = goal_label_to_value.get(label, "")
         if not goal_value:
@@ -104,6 +121,7 @@ def create_app():
 
     @app.post("/complete/<workout_id>")
     def complete(workout_id):
+        """Complete a workout, award points, and save state."""
         w = _find_workout_by_id(workout_id)
         if not w:
             flash("That workout could not be found.", "error")
@@ -117,6 +135,7 @@ def create_app():
 
     @app.get("/history")
     def history():
+        """Display workout history with analytics charts."""
         import datetime
         from collections import defaultdict
         state = _state()
@@ -222,6 +241,7 @@ def create_app():
 
     @app.get("/friends")
     def friends():
+        """Show friends leaderboard."""
         state = _state()
         me = state.user.view_rank()
         rows = [("You", me["tier"], me["elo"])]
@@ -239,6 +259,7 @@ def create_app():
 
     @app.post("/friends/add")
     def add_friend():
+        """Add a friend by name and optional ELO."""
         name = (request.form.get("name") or "").strip()
         elo_raw = (request.form.get("elo") or "").strip()
 
@@ -267,6 +288,7 @@ def create_app():
 
     @app.post("/friends/remove")
     def remove_friend():
+        """Remove a friend from the list."""
         name = (request.form.get("name") or "").strip()
         if not name or name == "You":
             return redirect(url_for("friends"))
@@ -279,6 +301,7 @@ def create_app():
 
     @app.get("/profile")
     def profile():
+        """Show user profile page with stats."""
         state = _state()
         workouts = list(state.user.get_history() or [])
         total_workouts = len(workouts)
@@ -293,6 +316,7 @@ def create_app():
 
     @app.post("/profile")
     def update_profile():
+        """Update user profile information, including photo upload."""
         state = _state()
         photo_url = request.form.get("photo_url", "")
         uploaded = request.files.get("photo_file")
@@ -328,6 +352,7 @@ def create_app():
 
     @app.get("/health")
     def health():
+        """Health check endpoint for monitoring."""
         return {"ok": True, "workouts_loaded": len(workouts_db)}
 
     return app
@@ -338,4 +363,3 @@ app = create_app()
 if __name__ == "__main__":
     # `flask run` works too, but this keeps it simple for class projects.
     app.run(host="127.0.0.1", port=int(os.environ.get("PORT", "5000")), debug=True)
-
