@@ -12,20 +12,23 @@ from fitness_app import (
 
 
 def print_header(title):
+    """Print a formatted section header."""
     print("\n" + "=" * 50)
     print(f"  {title}")
     print("=" * 50)
 
 
 def main():
+    """Main CLI loop for the fitness app."""
+    # Load workout catalog
     workouts_db = load_workouts()
     if not workouts_db:
         print("Could not load fitness_catalog.csv. Add the file and try again.")
         return
 
     user = User()
-    goal = None
-    goal_label = None
+    goal = None          # Current fitness goal (value)
+    goal_label = None    # Display name of the goal
 
     print_header("Fitness App")
     print("Set your fitness goal to get personalized workout recommendations.\n")
