@@ -14,12 +14,15 @@ from fitness_app import (
 
 
 class FitnessAppGUI(tk.Tk):
+    """Main GUI application for the fitness app using Tkinter."""
+
     def __init__(self):
         super().__init__()
         self.title("Fitness App")
         # Desktop window that contains a centered "phone" frame.
         self.minsize(920, 720)
 
+        # Load saved state and catalog
         self.state = load_state()
         self.user = self.state.user
         self.workouts_db = load_workouts()
@@ -29,14 +32,17 @@ class FitnessAppGUI(tk.Tk):
                 "Could not load fitness_catalog.csv.\n\nMake sure it is in the same folder as gui.py.",
             )
 
+        # Goal handling
         self.goals = get_goals()
         self.goal_label_to_value = {label: value for _, label, value in self.goals}
         self.goal_var = tk.StringVar(value=self.goals[0][1])
 
+        # UI state
         self.selected_workout = None
         self.recommendations = []
         self.current_page = tk.StringVar(value="home")
 
+        # Build UI and load initial data
         self._setup_style()
         self._build_ui()
         self._refresh_rank()
@@ -47,12 +53,14 @@ class FitnessAppGUI(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _setup_style(self):
+        """Configure ttk styles and color scheme for the app."""
         style = ttk.Style(self)
         try:
             style.theme_use("clam")
         except tk.TclError:
             pass
 
+        # Color palette
         bg = "#0b1220"        # app background
         phone = "#0f172a"     # phone body
         card = "#111c33"      # card background
@@ -73,6 +81,7 @@ class FitnessAppGUI(tk.Tk):
 
         self.configure(background=bg)
 
+        # Apply styles
         style.configure(".", font=("Segoe UI", 10))
         style.configure("App.TFrame", background=bg)
         style.configure("Phone.TFrame", background=phone)
@@ -98,7 +107,7 @@ class FitnessAppGUI(tk.Tk):
 
         style.configure("TCombobox", padding=(8, 8))
 
-        # Treeview polish
+        # Treeview styling
         style.configure(
             "Treeview",
             background=card,
@@ -111,6 +120,7 @@ class FitnessAppGUI(tk.Tk):
         style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
 
     def _build_ui(self):
+        """Create the main window layout with a centered phone frame and bottom navigation."""
         root = ttk.Frame(self, style="App.TFrame", padding=18)
         root.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
@@ -138,7 +148,7 @@ class FitnessAppGUI(tk.Tk):
         self.rank_var = tk.StringVar(value="Bronze • 0 ELO")
         ttk.Label(appbar, textvariable=self.rank_var, style="Sub.TLabel").grid(row=1, column=0, sticky="w", pady=(2, 0))
 
-        # Pages container
+        # Pages container (holds home, history, friends)
         self.pages = ttk.Frame(phone_outer, style="Phone.TFrame", padding=(14, 0, 14, 0))
         self.pages.grid(row=1, column=0, sticky="nsew")
         self.pages.columnconfigure(0, weight=1)
@@ -151,12 +161,12 @@ class FitnessAppGUI(tk.Tk):
         for p in (self.page_home, self.page_history, self.page_friends):
             p.grid(row=0, column=0, sticky="nsew")
 
-        # Home page
+        # Build each page
         self._build_home(self.page_home)
         self._build_history(self.page_history)
         self._build_friends(self.page_friends)
 
-        # Bottom nav
+        # Bottom navigation bar
         nav = ttk.Frame(phone_outer, style="Phone.TFrame", padding=(12, 10))
         nav.grid(row=2, column=0, sticky="ew")
         nav.columnconfigure(0, weight=1)
@@ -170,6 +180,7 @@ class FitnessAppGUI(tk.Tk):
         self._show_page("home")
 
     def _build_home(self, parent):
+        """Build the home page: goal selector, workout list, and details panel."""
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(1, weight=1)
         parent.rowconfigure(2, weight=0)
@@ -189,7 +200,7 @@ class FitnessAppGUI(tk.Tk):
         goal_combo.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         goal_combo.bind("<<ComboboxSelected>>", lambda _e: self._refresh_recommendations())
 
-        # Programs card
+        # Programs card (treeview for workouts)
         rec_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         rec_card.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
         rec_card.columnconfigure(0, weight=1)
@@ -208,7 +219,7 @@ class FitnessAppGUI(tk.Tk):
         self.tree.configure(yscrollcommand=tree_scroll.set)
         tree_scroll.grid(row=1, column=1, sticky="ns", pady=(10, 0))
 
-        # Details card
+        # Details card (shows selected workout info)
         details_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         details_card.grid(row=2, column=0, sticky="ew", pady=(0, 12))
         details_card.rowconfigure(2, weight=1)
@@ -233,6 +244,7 @@ class FitnessAppGUI(tk.Tk):
         self.details.grid(row=1, column=0, sticky="nsew", pady=(10, 12))
 
     def _build_history(self, parent):
+        """Build the history page: list of completed workouts."""
         parent.columnconfigure(0, weight=1)
         parent.rowconfigure(1, weight=1)
 
@@ -254,8 +266,10 @@ class FitnessAppGUI(tk.Tk):
         self.history_list.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
 
     def _build_friends(self, parent):
+        """Build the friends page: add friends and leaderboard."""
         parent.columnconfigure(0, weight=1)
 
+        # Add friend form
         add_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         add_card.grid(row=0, column=0, sticky="ew", pady=(14, 12))
         add_card.columnconfigure(0, weight=1)
@@ -272,6 +286,7 @@ class FitnessAppGUI(tk.Tk):
         ttk.Entry(add_row, textvariable=self.friend_elo_var, width=7).grid(row=0, column=1, sticky="e", padx=(0, 8))
         ttk.Button(add_row, text="Add", command=self._add_friend).grid(row=0, column=2, sticky="e")
 
+        # Leaderboard treeview
         lb_card = ttk.Frame(parent, style="Card.TFrame", padding=14)
         lb_card.grid(row=1, column=0, sticky="nsew", pady=(0, 12))
         lb_card.columnconfigure(0, weight=1)
@@ -294,6 +309,7 @@ class FitnessAppGUI(tk.Tk):
         ttk.Button(lb_card, text="Remove selected", command=self._remove_selected_friend).grid(row=2, column=0, sticky="ew", pady=(12, 0))
 
     def _show_page(self, page):
+        """Raise the selected page (home, history, or friends)."""
         self.current_page.set(page)
         if page == "home":
             self.page_home.tkraise()
@@ -303,6 +319,7 @@ class FitnessAppGUI(tk.Tk):
             self.page_friends.tkraise()
 
     def _refresh_recommendations(self):
+        """Update the workout treeview based on current goal."""
         self.tree.delete(*self.tree.get_children())
         self.selected_workout = None
         self._set_details("")
@@ -321,6 +338,7 @@ class FitnessAppGUI(tk.Tk):
             self._set_details("No programs found for this goal.\n\nTry a different goal.")
 
     def _on_select_workout(self, _event):
+        """Handle selection of a workout from the treeview."""
         sel = self.tree.selection()
         if not sel:
             return
@@ -332,6 +350,7 @@ class FitnessAppGUI(tk.Tk):
         self._set_details(self._format_workout(self.selected_workout))
 
     def _format_workout(self, w):
+        """Return a formatted string of workout details."""
         lines = [
             f"Title: {w.get('title', '')}",
             f"Goal: {w.get('goal', '')}",
@@ -345,16 +364,19 @@ class FitnessAppGUI(tk.Tk):
         return "\n".join(lines).strip()
 
     def _set_details(self, text):
+        """Set the text in the details widget."""
         self.details.configure(state="normal")
         self.details.delete("1.0", "end")
         self.details.insert("1.0", text)
         self.details.configure(state="disabled")
 
     def _refresh_rank(self):
+        """Update the rank display in the top bar."""
         info = self.user.view_rank()
         self.rank_var.set(f"{info['tier']} • {info['elo']} ELO")
 
     def _refresh_history(self):
+        """Update the history listbox with completed workouts."""
         self.history_list.delete(0, "end")
         history = self.user.get_history()
         if not history:
@@ -364,6 +386,7 @@ class FitnessAppGUI(tk.Tk):
             self.history_list.insert("end", f"{w.get('date', '')} — {w.get('title', '')} (+{w.get('points', 0)} pts)")
 
     def _complete_selected(self):
+        """Complete the selected workout and update points/rank/history."""
         if not self.selected_workout:
             messagebox.showinfo("Select a program", "Pick a program from the list first.")
             return
@@ -374,16 +397,19 @@ class FitnessAppGUI(tk.Tk):
         self._persist()
 
     def _persist(self):
+        """Save current state to disk."""
         self.state.user = self.user
         save_state(self.state)
 
     def _on_close(self):
+        """Handle window close event: save state before destroying."""
         try:
             self._persist()
         finally:
             self.destroy()
 
     def _refresh_friends(self):
+        """Refresh the leaderboard treeview with current friends and user."""
         self.friends_tree.delete(*self.friends_tree.get_children())
         rows = []
 
@@ -399,6 +425,7 @@ class FitnessAppGUI(tk.Tk):
             self.friends_tree.insert("", "end", iid=str(i), values=(name, tier, elo))
 
     def _add_friend(self):
+        """Add a friend to the list."""
         name = self.friend_name_var.get().strip()
         if not name:
             messagebox.showinfo("Friend name required", "Enter a friend name.")
@@ -427,6 +454,7 @@ class FitnessAppGUI(tk.Tk):
         self._persist()
 
     def _remove_selected_friend(self):
+        """Remove the selected friend from the leaderboard."""
         sel = self.friends_tree.selection()
         if not sel:
             return
@@ -443,4 +471,3 @@ class FitnessAppGUI(tk.Tk):
 if __name__ == "__main__":
     app = FitnessAppGUI()
     app.mainloop()
-
