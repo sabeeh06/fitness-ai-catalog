@@ -14,12 +14,12 @@ from pathlib import Path
 
 APP_DATA_FILE = "fitness_app_data.json"
 
-
 class User:
     def __init__(self):
         self.workouts = []
         self.rank = Rank()
 
+        #all saved user data
         self.profile = {
             "username": "",
             "full_name": "",
@@ -38,10 +38,12 @@ class User:
             "theme": "dark",
         }
 
+    #complete a workout and save it to the history
     def add_workout(self, workout):
         self.workouts.append(workout)
         self.rank.update_rank(workout["points"])
 
+    #update profile to show the changed information
     def update_profile(self, updates):
         """Update profile fields from a dict (sanitized)."""
         allowed_keys = self.profile.keys()
@@ -76,6 +78,7 @@ class User:
             u.profile.update(data["profile"])
         return u
     
+    #get the amount of points the user has earned today only
     def get_today_points(self):
         cur_date = datetime.date.today().isoformat()
 
@@ -88,18 +91,20 @@ class User:
     def get_rank(self):
         return self.rank
 
-
+#user and friend ranks
 class Rank:
     def __init__(self):
         self.elo = 0
         self.tier = "Unranked"
         self.last_decay = datetime.date.today()
 
+    #update rank for completing a workout
     def update_rank(self, points):
         self.decay()
         self.elo += points
         self._update_tier()
 
+    #increase the rank tier if elo passes certain thresholds
     def _update_tier(self):
         elo = self.elo
 
@@ -134,6 +139,7 @@ class Rank:
 
                 self.tier = f"{name} {divisions[index]}"
 
+    #reduce player rank each real life day, based on their current rank
     def decay(self):
         cur_date = datetime.date.today()
         time_passed = (cur_date - self.last_decay).days
@@ -157,6 +163,7 @@ class Rank:
     def calculate_decay(self):      
         return math.floor(self.calculate_decay_smart(self.elo))
     
+    #helper for calculate_decay
     def calculate_decay_smart(self, elo):
         d = 25 + (elo / 100)
         
@@ -198,7 +205,7 @@ class Rank:
         #    r.tier = data["tier"]
         return r
 
-
+#added friends
 class Friend:
     def __init__(self, name, elo=0):
         self.name = (name or "").strip()
@@ -217,7 +224,7 @@ class Friend:
         friend.rank = Rank.from_dict(data.get("rank", {}))
         return friend
 
-
+#application
 class AppState:
     def __init__(self, user=None, friends=None):
         self.user = user or User()
@@ -242,11 +249,11 @@ class AppState:
                 continue
         return AppState(user=user, friends=friends)
 
-
+#get the path of user data
 def _data_path(filename=APP_DATA_FILE):
     return Path(__file__).parent / filename
 
-
+#load user data
 def load_state(filename=APP_DATA_FILE):
     path = _data_path(filename)
     if not path.exists():
@@ -258,7 +265,7 @@ def load_state(filename=APP_DATA_FILE):
     except Exception:
         return AppState()
 
-
+#save user data
 def save_state(state, filename=APP_DATA_FILE):
     path = _data_path(filename)
     with open(path, "w", encoding="utf-8") as f:
@@ -269,6 +276,7 @@ def save_state(state, filename=APP_DATA_FILE):
 # Catalog
 # ---------------------------------------------------------------------------
 
+#load all available workouts from the fitness catalog file
 def load_workouts(filename="fitness_catalog.csv"):
     path = Path(__file__).parent / filename
     if not path.exists():
@@ -284,16 +292,17 @@ def load_workouts(filename="fitness_catalog.csv"):
                 workouts.append(row)
     return workouts
 
-
+#get all workouts only for users specified goal
 def get_workouts_by_goal(workouts, goal):
     if not goal:
         return []
     goal_lower = goal.lower().strip()
     return [w for w in workouts if w.get("goal", "").lower().strip() == goal_lower]
 
-
+#get all goals for workout selection
 def get_goals():
     return [
+        #all goals available to user
         ("1", "Gain muscle", "muscle gain"),
         ("2", "Lose weight", "fat loss"),
         ("3", "Maintain fitness", "strength"),
@@ -301,6 +310,7 @@ def get_goals():
         ("5", "Increase flexibility", "mobility"),
     ]
 
+#points calculation based on the level of the workout and user
 def points_for_level(level, user):
     level = (level or "").lower()
     elo = user.get_rank().get_elo()
@@ -330,7 +340,7 @@ def points_for_level(level, user):
 
     return math.floor(final_points)
 
-
+#complete a workout
 def complete_workout(user, workout):
     level = workout.get("level", "beginner")
     points = points_for_level(level, user)
